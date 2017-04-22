@@ -1,0 +1,123 @@
+
+#include<stdio.h>
+int main()
+{
+    long long int i,j,t,r,k,l,m,n,a,b,c,ar[100],arr[100];
+    scanf("%lld",&t);
+    for(r=0;r<t;r++)
+    {
+        scanf("%lld",&n);
+        j=0;
+        if(n!=0&&n!=1)
+        {
+                for(i=0;i<9;i++)
+        {
+            m=n;k=2+i;l=1;a=0;j=0;
+            while(m!=1&&k<=9)
+            {
+                if(m%k==0)
+                {
+                    l=l*k;m/=k;
+                    a=a*10+k;
+                    ar[j++]=k;
+                }
+                else
+                    k++;
+            }
+            if(l==n)
+                break;
+            if(l>n)
+            break;
+        }
+
+        for(i=0;i<j;i++)
+            arr[i]=ar[i];
+          c=j;
+         for(i=0;i<j-1;i++)
+        {
+            if(ar[i]*ar[i+1]<10)
+            {
+                ar[i]=ar[i]*ar[i+1];
+                k=i+1;
+                while(k<j-1)
+                {
+                    ar[k]=ar[k+1];
+                    k++;
+                }
+                j=j-1;
+                i=i-1;
+            }
+        }
+
+          for(i=0;i<j;i++)
+        {
+            for(k=0;k<j-i-1;k++)
+            {
+                if(ar[k]>ar[k+1])
+                {
+                    l=ar[k];
+                    ar[k]=ar[k+1];
+                    ar[k+1]=l;
+                }
+            }
+        }
+        for(i=0,b=0;i<j;i++)
+            b=b*10+ar[i];
+            j=c;
+        for(i=0;i<j;i++)
+            ar[i]=arr[i];
+         for(i=0;i<j;i++)
+        {
+            for(k=0;k<j-i-1;k++)
+            {
+                if(ar[k]<ar[k+1])
+                {
+                    l=ar[k];
+                    ar[k]=ar[k+1];
+                    ar[k+1]=l;
+                }
+            }
+        }
+
+         for(i=0;i<j-1;i++)
+        {
+            if(ar[i]*ar[i+1]<10)
+            {
+                ar[i]=ar[i]*ar[i+1];
+                k=i+1;
+                while(k<j-1)
+                {
+                    ar[k]=ar[k+1];
+                    k++;
+                }
+                j=j-1;
+                i=i-1;
+            }
+        }
+
+          for(i=0;i<j;i++)
+        {
+            for(k=0;k<j-i-1;k++)
+            {
+                if(ar[k]>ar[k+1])
+                {
+                    l=ar[k];
+                    ar[k]=ar[k+1];
+                    ar[k+1]=l;
+                }
+            }
+        }
+        for(i=0,c=0;i<j;i++)
+            c=c*10+ar[i];
+        }
+            if(n==0)
+                printf("0\n");
+            else if(n==1)
+                printf("1\n");
+            else if(a==0&&n!=0&&n!=1)
+                printf("-1\n");
+            else
+            printf("%lld\n",(b>c)?c:b);
+    }
+    return 0;
+}
