@@ -10,13 +10,12 @@
 
 using namespace std;
 
-const string phrase = "poultry outwits ants";
-
 class filter
 {
 private:
     string phrase;
     int freq[30];
+    int rem;
 public:
     filter(string s) {
         phrase = s;
@@ -25,6 +24,7 @@ public:
             if(phrase[i] != ' ')
                 freq[(phrase[i]-'a')]++;
         }
+        rem = s.size();
     }
 
     bool isValid(string w) {
@@ -45,6 +45,7 @@ public:
                 return false;
             }
             freq[w[i]-'a']--;
+            rem--;
         }
         return true;
     }
@@ -53,6 +54,7 @@ public:
         for(int i = 0; i < w.size(); i++) {
             if(w[i] >= 'a' && w[i] <= 'z') {
                 freq[w[i]-'a']++;
+                rem++;
             }
         }
     }
@@ -68,10 +70,13 @@ public:
         }
         return s;
     }
+
+    bool isEmpty() {
+        return rem <= 0;
+    }
 };
 
-vector<string> getWordList() {
-    filter f(phrase);
+vector<string> getWordList(filter &f) {
     ifstream wFile("wordlist");
     string w;
     vector<string> wList;
@@ -94,51 +99,76 @@ void initAnagramMap(vector<string> &wList) {
     }
 }
 
-const string easyHash = "e4820b45d2277f3844eac66c903e84be";
-const string midHash = "23170acc097c24edb98fc5488ab033fe";
-const string hardHash = "665e5bcb0c20062fe8abaaf4628bb154";
-int cnt = 0;
+struct hashQuery{
+    string hash;
+    string phrase;
+    bool found;
+};
 
-void findPhrase(vector<string> &wList) {
-    filter f(phrase);
-    int n = wList.size();
-    for(int i = 0; i < n; i++) {
-        assert(f.reduceFreq(wList[i])==true);
-        for(int j = 0; j < n; j++) {
-            if(f.isValid(wList[j])) {
-                assert(f.reduceFreq(wList[j])==true);
+int queryRemaining;
 
-                auto it = anagramMap.find(f.getRemianing());
-                if(it != anagramMap.end()) {
-                    cnt += it->second.size();
-                    
-                    for(int k = 0; k < it->second.size(); k++) {
-                        string p = wList[i] + " " + wList[j] + " " + it->second[k];
-                        string digest = md5(p);
-                        if(digest == easyHash) {
-                            cout << "easy:" << p << endl;
-                        }
-                        if(digest == midHash) {
-                            cout << "mid:" << p << endl;
-                        }
-                        if(digest == hardHash) {
-                            cout << "hard:" << p << endl;
-                        }
+void findPhrase(vector<string> &wList, filter &filtr, int wCnt, string ph, vector<hashQuery> &hashQ) {
+    if(filtr.isEmpty() || queryRemaining == 0) {
+        return;
+    }
+    
+    auto it = anagramMap.find(filtr.getRemianing());
+    if(it != anagramMap.end()) {
+        for(int k = 0; k < it->second.size(); k++) {
+            ph = ph + " " + it->second[k];
+            string digest = md5(ph);
+            for(int i = 0; i < hashQ.size(); i++) {
+                if(!hashQ[i].found) {
+                    if(hashQ[i].hash == digest) {
+                        hashQ[i].phrase = ph;
+                        hashQ[i].found = true;
+                        queryRemaining--;
                     }
                 }
-
-                f.addFreq(wList[j]);
-                
             }
         }
-        
-        f.addFreq(wList[i]);
+    }
+    
+    if(wCnt==1){
+        return;
+    }
+
+    for(int i = 0; i < wList.size(); i++) {
+        if(filtr.isValid(wList[i])) {
+            filtr.reduceFreq(wList[i]);
+            if( ph.size() > 0){
+                findPhrase(wList, filtr, wCnt-1, ph + " " + wList[i], hashQ);
+            } else {
+                findPhrase(wList, filtr, wCnt-1, wList[i], hashQ);
+            }
+            filtr.addFreq(wList[i]);
+        }
     }
 }
 
 int main() {
-    vector<string> wList = getWordList();
+    clock_t start;
+    double duration;
+    start = clock();
+
+    filter f("poultry outwits ants");
+    vector<string> wList = getWordList(f);
     initAnagramMap(wList);
-    findPhrase(wList);
+    
+    vector<hashQuery> q = {
+        {"e4820b45d2277f3844eac66c903e84be", "", false},
+        {"23170acc097c24edb98fc5488ab033fe", "", false},
+        {"665e5bcb0c20062fe8abaaf4628bb154", "", false},
+    };
+    queryRemaining = q.size();
+
+    findPhrase(wList, f, 4, "", q);
+
+    for(int i = 0; i < q.size(); i++) {
+        cout << q[i].hash << " : " << q[i].phrase << endl;
+    }
+
+    duration = ( clock() - start ) / (double) CLOCKS_PER_SEC;
+    std::cout<<"duration: "<< duration <<'s\n';
     return 0;
 }
