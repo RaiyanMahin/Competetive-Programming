@@ -36,7 +36,6 @@ public:
             }
             tempFreq[w[i]-'a']--;
         }
-        //cout << "is valid" << endl;
         return true;
     }
 
@@ -47,7 +46,6 @@ public:
             }
             freq[w[i]-'a']--;
         }
-        // cout << "reduce freq" << endl;
         return true;
     }
 
@@ -57,7 +55,6 @@ public:
                 freq[w[i]-'a']++;
             }
         }
-        // cout << "add freq" << endl;
     }
 
     string getRemianing() {
@@ -68,18 +65,13 @@ public:
                 s = s + i;
                 cnt--;
             }
-            //cout << endl;
         }
-        // cout << "remaining" << endl;
         return s;
     }
 };
 
 vector<string> getWordList() {
     filter f(phrase);
-
-    cout << f.getRemianing() << endl;
-    
     ifstream wFile("wordlist");
     string w;
     vector<string> wList;
@@ -110,25 +102,19 @@ int cnt = 0;
 void findPhrase(vector<string> &wList) {
     filter f(phrase);
     int n = wList.size();
-    // cout << n << endl;
     for(int i = 0; i < n; i++) {
-        // cout << wList[i] << endl;
         assert(f.reduceFreq(wList[i])==true);
         for(int j = 0; j < n; j++) {
-            // cout << j << ": in :" << wList[j] << endl;
             if(f.isValid(wList[j])) {
                 assert(f.reduceFreq(wList[j])==true);
 
-                // cout << "ana-in" << endl;
                 auto it = anagramMap.find(f.getRemianing());
-                // cout << "ana-out";
                 if(it != anagramMap.end()) {
                     cnt += it->second.size();
                     
                     for(int k = 0; k < it->second.size(); k++) {
                         string p = wList[i] + " " + wList[j] + " " + it->second[k];
                         string digest = md5(p);
-                        // cout << p << endl;
                         if(digest == easyHash) {
                             cout << "easy:" << p << endl;
                         }
@@ -147,7 +133,6 @@ void findPhrase(vector<string> &wList) {
         }
         
         f.addFreq(wList[i]);
-        //cout << f.getRemianing() << endl;
     }
 }
 
@@ -155,6 +140,5 @@ int main() {
     vector<string> wList = getWordList();
     initAnagramMap(wList);
     findPhrase(wList);
-    cout << cnt << endl;
     return 0;
 }
