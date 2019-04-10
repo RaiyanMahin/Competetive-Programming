@@ -123,10 +123,9 @@ void initAnagramMap(vector<string> &wList) {
 //    It will reduce unnecessary exploration
 //  - for the last word in the phrase, use 'anagramMap' hash table to find the
 //    word list instead of linear search
-void findPhrase(vector<string> &wList, filter &f, int wLimit, string phrase, vector<hashQuery> &hashQ) {
-  if (f.isEmpty()) {
-    return;
-  }
+void findPhrase(vector<string> &wList, filter &f, int wLimit, string phrase,
+                vector<hashQuery> &hashQ) {
+  if (f.isEmpty()) return;
 
   bool noQueryLeft = true;
   for (int i = 0; i < hashQ.size(); i++) {
@@ -135,9 +134,7 @@ void findPhrase(vector<string> &wList, filter &f, int wLimit, string phrase, vec
       break;
     }
   }
-  if (noQueryLeft) {
-    return;
-  }
+  if (noQueryLeft) return;
 
   // for last word
   auto it = anagramMap.find(f.getRemianingLetters());
@@ -157,9 +154,7 @@ void findPhrase(vector<string> &wList, filter &f, int wLimit, string phrase, vec
 
   // whether it reached maximum word limit in phrase
   // it's to reduce runtime
-  if (wLimit == 1) {
-    return;
-  }
+  if (wLimit == 1) return;
 
   for (int i = 0; i < wList.size(); i++) {
     if (f.containsAll(wList[i])) {
