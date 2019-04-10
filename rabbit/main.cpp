@@ -20,28 +20,31 @@ struct hashQuery {
 
 class filter {
  private:
-  int freq[27];  // contains letter([a-z]) frequency
+  int freq[27];  // contains letter([a-z]) frequency, work as hash table
   int rem;       // remaining letter of the phrase
  public:
   filter(string s) {
     memset(freq, 0, sizeof(freq));
     for (int i = 0; i < s.size(); i++) {
-      if (s[i] != ' ') freq[s[i] - 'a']++;
+      if (s[i] != ' ') freq[hashKey(s[i])]++;
     }
     rem = s.size();
   }
 
   bool isEmpty() { return rem <= 0; }
 
+  int hashKey(char c) { return c - 'a'; }
+
   // checks whether freq[] contains all the letters of the given string
   bool containsAll(string w) {
     int tempFreq[27];
     memcpy(tempFreq, freq, sizeof(freq));
     for (int i = 0; i < w.size(); i++) {
-      if (w[i] < 'a' || w[i] > 'z' || tempFreq[w[i] - 'a'] <= 0) {
+      int key = hashKey(w[i]);
+      if (w[i] < 'a' || w[i] > 'z' || tempFreq[key] <= 0) {
         return false;
       }
-      tempFreq[w[i] - 'a']--;
+      tempFreq[key]--;
     }
     return true;
   }
@@ -49,10 +52,11 @@ class filter {
   // reduce the frequency of given string's letter
   bool reduceFreq(string w) {
     for (int i = 0; i < w.size(); i++) {
-      if (w[i] < 'a' || w[i] > 'z' || freq[w[i] - 'a'] <= 0) {
+      int key = hashKey(w[i]);
+      if (w[i] < 'a' || w[i] > 'z' || freq[key] <= 0) {
         return false;
       }
-      freq[w[i] - 'a']--;
+      freq[key]--;
       rem--;
     }
     return true;
@@ -62,7 +66,7 @@ class filter {
   void addFreq(string w) {
     for (int i = 0; i < w.size(); i++) {
       if (w[i] >= 'a' && w[i] <= 'z') {
-        freq[w[i] - 'a']++;
+        freq[hashKey(w[i])]++;
         rem++;
       }
     }
@@ -73,7 +77,7 @@ class filter {
   string getRemianingLetters() {
     string s = "";
     for (char i = 'a'; i <= 'z'; i++) {
-      int cnt = freq[i - 'a'];
+      int cnt = freq[hashKey(i)];
       while (cnt > 0) {
         s = s + i;
         cnt--;
@@ -114,13 +118,12 @@ void initAnagramMap(vector<string> &wList) {
 // idea: generate all possible phrases in a recursive manner, then check with
 // the md5 hash optimization:
 //  - using filter to filtered out the words that can not formed from the
-//  remaining letters in the filter
+//    remaining letters in the filter
 //  - if a word used in a phrase, then reduce letter frequency from the filter.
-//  It will reduce unnecessary exploration
+//    It will reduce unnecessary exploration
 //  - for the last word in the phrase, use 'anagramMap' hash table to find the
-//  word list instead of linear search
-void findPhrase(vector<string> &wList, filter &f, int wLimit, string phrase,
-                vector<hashQuery> &hashQ) {
+//    word list instead of linear search
+void findPhrase(vector<string> &wList, filter &f, int wLimit, string phrase, vector<hashQuery> &hashQ) {
   if (f.isEmpty()) {
     return;
   }
